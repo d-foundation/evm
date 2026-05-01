@@ -24,13 +24,11 @@ func NewMsgServerImpl(keeper cmn.BankKeeper) *MsgServer {
 
 func (m MsgServer) Send(goCtx context.Context, msg *banktypes.MsgSend) error {
 	switch keeper := m.BankKeeper.(type) {
-	// have cases for both pointer and non-pointer to cover how different apps could be storing the keeper
-	case bankkeeper.BaseKeeper:
-		msgSrv := bankkeeper.NewMsgServerImpl(keeper)
-		if _, err := msgSrv.Send(goCtx, msg); err != nil {
-			// This should return an error to avoid the contract from being executed and an event being emitted
-			return ConvertErrToERC20Error(err)
-		}
+	// dchain patch: removed `case bankkeeper.BaseKeeper:` (value).
+	// The d-foundation/cosmos-sdk fork narrowed
+	// `bankkeeper.NewMsgServerImpl` to `*BaseKeeper` (pointer) only,
+	// making the value case fail to compile. dchain stores BankKeeper
+	// as `*BaseKeeper` exclusively, so the value case is unreachable.
 	case *bankkeeper.BaseKeeper:
 		msgSrv := bankkeeper.NewMsgServerImpl(keeper)
 		if _, err := msgSrv.Send(goCtx, msg); err != nil {
